@@ -3,35 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel de Administración - Apuestas Deportivas</title>
+    <title>Apuestas Deportivas</title>
     <style>
         /* ... (mantén los estilos anteriores) ... */
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Panel de Administración - Apuestas Deportivas</h1>
-        <form id="nuevaApuestaForm">
-            <input type="text" id="liga" placeholder="Liga" required>
-            <input type="text" id="evento" placeholder="Evento" required>
-            <input type="text" id="pick" placeholder="Pick" required>
-            <input type="number" id="cuota" placeholder="Cuota" step="0.01" required>
-            <button type="submit">Agregar Apuesta</button>
-        </form>
-        <table id="apuestasTable">
-            <thead>
-                <tr>
-                    <th>Liga</th>
-                    <th>Evento</th>
-                    <th>Pick</th>
-                    <th>Cuota</th>
-                    <th>Acción</th>
-                </tr>
-            </thead>
-            <tbody>
-                <!-- Las apuestas se insertarán aquí -->
-            </tbody>
-        </table>
+        <h1>Apuestas Deportivas</h1>
+        <button id="actualizarBtn">Actualizar Eventos</button>
+        <div id="apuestasContainer" class="apuestas-container">
+            <!-- Las apuestas se insertarán aquí -->
+        </div>
     </div>
 
     <!-- Firebase App (the core Firebase SDK) is always required and must be listed first -->
@@ -41,16 +24,16 @@
     <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-database.js"></script>
 
     <script>
-        // Tu configuración de Firebase
+        // Tu configuración de Firebase (debe ser la misma que en el panel de administración)
         const firebaseConfig = {
             // Reemplaza esto con tu configuración real de Firebase
-            apiKey:  "AIzaSyA0McvyLD9nfUvrbC7ObC7Xu0GaZVrfn0Q",
+            apiKey: "AIzaSyA0McvyLD9nfUvrbC7ObC7Xu0GaZVrfn0Q",
             authDomain: "virtual-statics.firebaseapp.com",
             databaseURL: "https://virtual-statics-default-rtdb.firebaseio.com",
             projectId: "virtual-statics",
             storageBucket: "virtual-statics.appspot.com",
             messagingSenderId: "1059783388611",
-            appId: "1:1059783388611:web:4b0d9c2529cde120e76176",
+            appId:"1:1059783388611:web:4b0d9c2529cde120e76176",
         };
 
         // Inicializar Firebase
@@ -60,48 +43,40 @@
         const database = firebase.database();
         const apuestasRef = database.ref('apuestas');
 
-        // Función para mostrar las apuestas en la tabla
+        // Función para mostrar las apuestas
         function mostrarApuestas(snapshot) {
-            const tbody = document.querySelector('#apuestasTable tbody');
-            tbody.innerHTML = '';
+            const apuestasContainer = document.getElementById('apuestasContainer');
+            apuestasContainer.innerHTML = ''; // Limpiar contenedor
+            
+            if (!snapshot.exists()) {
+                apuestasContainer.innerHTML = '<p>No hay apuestas disponibles en este momento.</p>';
+                return;
+            }
             
             snapshot.forEach((childSnapshot) => {
                 const apuesta = childSnapshot.val();
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td>${apuesta.liga}</td>
-                    <td>${apuesta.evento}</td>
-                    <td>${apuesta.pick}</td>
-                    <td>${apuesta.cuota}</td>
-                    <td><button onclick="eliminarApuesta('${childSnapshot.key}')">Eliminar</button></td>
+                const apuestaCard = document.createElement('div');
+                apuestaCard.className = 'apuesta-card';
+                apuestaCard.innerHTML = `
+                    <h3>${apuesta.liga}</h3>
+                    <p><strong>Evento:</strong> ${apuesta.evento}</p>
+                    <p><strong>Pick:</strong> ${apuesta.pick}</p>
+                    <p><strong>Cuota:</strong> <span class="cuota">${apuesta.cuota}</span></p>
                 `;
-                tbody.appendChild(tr);
+                apuestasContainer.appendChild(apuestaCard);
             });
         }
 
-        // Función para agregar una nueva apuesta
-        function agregarApuesta(event) {
-            event.preventDefault();
-            const nuevaApuesta = {
-                liga: document.getElementById('liga').value,
-                evento: document.getElementById('evento').value,
-                pick: document.getElementById('pick').value,
-                cuota: parseFloat(document.getElementById('cuota').value)
-            };
-            apuestasRef.push(nuevaApuesta);
-            event.target.reset(); // Limpiar el formulario
+        // Función para actualizar los eventos (ahora solo muestra una alerta)
+        function actualizarEventos() {
+            alert('Los eventos se actualizan automáticamente en tiempo real.');
         }
-
-        // Función para eliminar una apuesta
-        function eliminarApuesta(key) {
-            apuestasRef.child(key).remove();
-        }
-
-        // Event listeners
-        document.getElementById('nuevaApuestaForm').addEventListener('submit', agregarApuesta);
 
         // Escuchar cambios en la base de datos
         apuestasRef.on('value', mostrarApuestas);
+
+        // Agregar event listener al botón de actualizar
+        document.getElementById('actualizarBtn').addEventListener('click', actualizarEventos);
     </script>
 </body>
 </html>
